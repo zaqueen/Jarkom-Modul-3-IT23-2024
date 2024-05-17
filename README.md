@@ -268,10 +268,47 @@ service bind9 restart
 <img src="attachment/0.2.jpeg">
 
 ## Nomor 1
-> Lakukan konfigurasi sesuai dengan peta yang sudah diberikan. <Br> Kemudian, karena masih banyak spice yang harus dikumpulkan, bantulah para aterides untuk bersaing dengan harkonen dengan kriteria berikut.: <Br> Semua CLIENT harus menggunakan konfigurasi dari DHCP Server. <Br>
+> (1) Lakukan konfigurasi sesuai dengan peta yang sudah diberikan. <Br> Kemudian, karena masih banyak spice yang harus dikumpulkan, bantulah para aterides untuk bersaing dengan harkonen dengan kriteria berikut.: <Br> Semua CLIENT harus menggunakan konfigurasi dari DHCP Server. <Br>
 > Client yang melalui House Harkonen mendapatkan range IP dari [prefix IP].1.14 - [prefix IP].1.28 dan [prefix IP].1.49 - [prefix IP].1.70 (2) <Br>
 > Client yang melalui House Atreides mendapatkan range IP dari [prefix IP].2.15 - [prefix IP].2.25 dan [prefix IP].2 .200 - [prefix IP].2.210 (3) <Br>
 > Client mendapatkan DNS dari Princess Irulan dan dapat terhubung dengan internet melalui DNS tersebut (4) <Br>
 > Durasi DHCP server meminjamkan alamat IP kepada Client yang melalui House Harkonen selama 5 menit sedangkan pada client yang melalui House Atreides selama 20 menit. Dengan waktu maksimal dialokasikan untuk peminjaman alamat IP selama 87 menit (5)
 *house == switch
 
+Pertama-tama, lakukan setup DHCP Relay terlebih dahulu pada AURA.
+#### Script
+* **Arakis**
+```
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE -s 10.75.0.0/16
+apt-get update
+apt install isc-dhcp-relay -y
+
+service isc-dhcp-relay start 
+
+echo '# Defaults for isc-dhcp-relay initscript
+
+# sourced by /etc/init.d/isc-dhcp-relay
+# installed at /etc/default/isc-dhcp-relay by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# What servers should the DHCP relay forward requests to?
+SERVERS="10.75.3.2" 
+
+# On what interfaces should the DHCP relay (dhrelay) serve DHCP requests?
+INTERFACES="eth1 eth2 eth3 eth4"
+
+# Additional options that are passed to the DHCP relay daemon?
+OPTIONS=""' > /etc/default/isc-dhcp-relay
+
+
+echo net.ipv4.ip_forward=1 > /etc/sysctl.conf
+
+service isc-dhcp-relay restart
+```
+* **Mohiam**
+```
+
+```
