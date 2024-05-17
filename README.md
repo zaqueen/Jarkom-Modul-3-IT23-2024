@@ -26,6 +26,16 @@
 16. [Soal 11](#Soal-11)
 17. [Soal 12](#Soal-12)
 18. [Soal 13](#Soal-13)
+18. [Soal 14](#Soal-14)
+18. [Soal 15](#Soal-15)
+18. [Soal 16](#Soal-16)
+18. [Soal 17](#Soal-17)
+18. [Soal 18](#Soal-18)
+18. [Soal 19](#Soal-19)
+18. [Soal 20](#Soal-20)
 
 ## Topologi
  <img src="attachment/topologii.jpeg">
+
+## Konfigurasi
+* Arakis
