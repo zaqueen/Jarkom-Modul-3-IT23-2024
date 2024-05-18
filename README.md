@@ -308,7 +308,59 @@ echo net.ipv4.ip_forward=1 > /etc/sysctl.conf
 
 service isc-dhcp-relay restart
 ```
+
+## Nomor 2,3,4,5
+
+Kemudian, lakukan konfigurasi DHCP Server pada HIMMEL 
 * **Mohiam**
 ```
+apt-get update
+apt-get install isc-dhcp-server -y
 
+interfaces="INTERFACESv4=\"eth0\"
+INTERFACESv6=\"\"
+"
+echo "$interfaces" > /etc/default/isc-dhcp-server
+
+subnet="option domain-name \"example.org\";
+option domain-name-servers ns1.example.org, ns2.example.org;
+
+default-lease-time 600;
+max-lease-time 7200;
+
+ddns-update-style-none;
+
+subnet 10.75.1.0 netmask 255.255.255.0 {
+    range 10.75.1.14 10.75.1.28;
+    range 10.75.1.49 10.75.1.70;
+    option routers 10.75.1.0;
+    option broadcast-address 10.75.1.255;
+    option domain-name-servers 10.75.3.3;
+    default-lease-time 300;
+    max-lease-time 5220;
+}
+
+subnet 10.75.2.0 netmask 255.255.255.0 {
+    range 10.75.2.15 10.75.2.25;
+    range 10.75.2.200 10.75.2.210;
+    option routers 10.75.2.0;
+    option broadcast-address 10.75.2.255;
+    option domain-name-servers 10.75.3.3;
+    default-lease-time 1200;
+    max-lease-time 5220;
+}
+
+subnet 10.75.3.0 netmask 255.255.255.0 {
+}
+
+subnet 10.75.4.0 netmask 255.255.255.0 {
+}
+
+"
+echo "$subnet" > /etc/dhcp/dhcpd.conf
+
+service isc-dhcp-server restart
 ```
+#### Result
+<img src="attachment/1.1.jpeg">
+<img src="attachment/1.2.jpeg">
