@@ -362,5 +362,5 @@ echo "$subnet" > /etc/dhcp/dhcpd.conf
 service isc-dhcp-server restart
 ```
 #### Result
-<img src="attachment/1.1.jpeg">
+<img src="attachment/1.1 (2).jpeg">
 <img src="attachment/1.2.jpeg">
