@@ -363,3 +363,4 @@ service isc-dhcp-server restart
 ```
 #### Result
 <img src="attachment/1.1 (2).jpeg">
+<img src="attachment/1.2 (2).jpeg">
