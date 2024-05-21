@@ -551,14 +551,19 @@ ab -n 100 -c 10 -p login.json -T application/json http://atreides.it23.com/api/a
 
 #### Result 
 testing 1
-<img src="attachment/18.1.jpeg">
-<img src="attachment/18.2.jpeg">
+
+<img src="attachment/19.1.jpeg">
+<img src="attachment/19.2.jpeg">
+
 testing 2
-<img src="attachment/18.3.jpeg">
-<img src="attachment/18.4.jpeg">
+
+<img src="attachment/19.3.jpeg">
+<img src="attachment/19.4.jpeg">
+
 testing 3
-<img src="attachment/18.5.jpeg">
-<img src="attachment/18.6.jpeg">
+
+<img src="attachment/19.5.jpeg">
+<img src="attachment/19.6.jpeg">
 
 ## Nomor 20
 > Nampaknya hanya menggunakan PHP-FPM tidak cukup untuk meningkatkan performa dari worker maka implementasikan Least-Conn pada Stilgar. Untuk testing kinerja dari worker tersebut dilakukan sebanyak 100 request dengan 10 request/second. (20)
