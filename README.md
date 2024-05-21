@@ -462,11 +462,18 @@ ab -n 100 -c 10 -p login.json -T application/json http://atreides.it23.com/api/a
 <img src="attachment/18.1.jpeg">
 <img src="attachment/18.2.jpeg">
 kemudian jalankan command berikut di laravel worker
+
 ```
 cat /var/log/nginx/fff_access.log
 ```
+
+leto
 <img src="attachment/18.3.jpeg">
+
+duncan
 <img src="attachment/18.4.jpeg">
+
+jessica
 <img src="attachment/18.5.jpeg">
 
 ## Nomor 19
