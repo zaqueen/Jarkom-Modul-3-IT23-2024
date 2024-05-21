@@ -311,6 +311,7 @@ service isc-dhcp-relay restart
 
 ## Nomor 2,3,4,5
 
+#### Script
 Kemudian, lakukan konfigurasi DHCP Server pada HIMMEL 
 * **Mohiam**
 ```
@@ -371,3 +372,221 @@ service isc-dhcp-server restart
 > POST /auth/login (16)
 > GET /me (17)
 
+#### Script
+Buat file `register.json` pada client yang berisi
+* **Client**
+```
+echo '
+{
+  "username": "kelompokit23",
+  "password": "passwordit23"
+}
+' > register.json
+```
+jalankan command 
+```
+ab -n 100 -c 10 -p register.json -T application/json http://10.75.2.4:8001/api/auth/register
+```
+
+#### Result
+<img src="attachment/15.1.jpeg">
+<img src="attachment/15.2.jpeg">
+
+## Nomor 16
+#### Script
+Buat file `login.json` pada client yang berisi
+```
+echo '
+{
+  "username": "kelompokit03",
+  "password": "passwordit03"
+}
+' > login.json
+```
+jalankan command
+```
+ab -n 100 -c 10 -p login.json -T application/json http://10.75.2.4:8001/api/auth/login
+```
+#### Result
+<img src="attachment/16.1 (2).jpeg">
+<img src="attachment/16.2 (2).jpeg">
+
+## Nomor 17
+jalankan command berikut
+```
+curl -X POST -H "Content-Type: application/json" -d @login.json http://10.75.2.4:8001/api/auth/login > login_output.txt
+token=$(cat login_output.txt | jq -r '.token')
+```
+
+lakukan testing
+```
+ab -n 100 -c 10 -H "Authorization: Bearer $token" http://10.75.2.4:8001/api/me
+```
+#### Result
+<img src="attachment/17.1.jpeg">
+<img src="attachment/17.2.jpeg">
+
+## Nomor 18
+> Untuk memastikan ketiganya bekerja sama secara adil untuk mengatur atreides Channel maka implementasikan Proxy Bind pada Stilgar untuk mengaitkan IP dari Leto, Duncan, dan Jessica. (18)
+
+#### Script
+**Stilgar**
+```
+echo 'upstream worker-laravel { #(round-robin(default), ip_hash, least_conn, hash $request_uri consistent)
+    server 10.75.2.4:8001;
+    server 10.75.2.3:8002;
+    server 10.75.2.2:8003;
+}
+
+server {
+    listen 80;
+    server_name atreides.it23.com;
+
+    location / {
+        proxy_pass http://worker-laravel;
+    }
+}
+' > /etc/nginx/sites-available/lb-laravel
+
+rm /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/lb-laravel /etc/nginx/sites-enabled/
+
+service nginx restart
+```
+lakukan testing dengan 
+```
+ab -n 100 -c 10 -p login.json -T application/json http://atreides.it23.com/api/auth/login
+```
+
+#### Result
+<img src="attachment/18.1.jpeg">
+<img src="attachment/18.2.jpeg">
+kemudian jalankan command berikut di laravel worker
+```
+cat /var/log/nginx/fff_access.log
+```
+<img src="attachment/18.3.jpeg">
+<img src="attachment/18.4.jpeg">
+<img src="attachment/18.5.jpeg">
+
+## Nomor 19
+> Untuk meningkatkan performa dari Worker, coba implementasikan PHP-FPM pada Leto, Duncan, dan Jessica. Untuk testing kinerja naikkan 
+> - pm.max_children
+> - pm.start_servers
+> - pm.min_spare_servers
+> - pm.max_spare_servers
+> sebanyak tiga percobaan dan lakukan testing sebanyak 100 request dengan 10 request/second kemudian berikan hasil analisisnya pada PDF.(19)
+
+#### Script
+disini saya membuat 3 script testing
+testing 1
+```
+echo '[www]
+user = www-data
+group = www-data
+listen = /run/php/php8.0-fpm.sock
+listen.owner = www-data
+listen.group = www-data
+php_admin_value[disable_functions] = exec,passthru,shell_exec,system
+php_admin_flag[allow_url_fopen] = off
+
+; Choose how the process manager will control the number of child processes.
+
+pm = dynamic
+pm.max_children = 10
+pm.start_servers = 5
+pm.min_spare_servers = 3
+pm.max_spare_servers = 8' > /etc/php/8.0/fpm/pool.d/www.conf
+
+service php8.0-fpm restart
+```
+testing 2
+```
+echo '[www]
+user = www-data
+group = www-data
+listen = /run/php/php8.0-fpm.sock
+listen.owner = www-data
+listen.group = www-data
+php_admin_value[disable_functions] = exec,passthru,shell_exec,system
+php_admin_flag[allow_url_fopen] = off
+
+; Choose how the process manager will control the number of child processes.
+
+pm = dynamic
+pm.max_children = 20
+pm.start_servers = 8
+pm.min_spare_servers = 5
+pm.max_spare_servers = 12' > /etc/php/8.0/fpm/pool.d/www.conf
+
+service php8.0-fpm restart
+```
+
+testing 3
+```
+echo '[www]
+user = www-data
+group = www-data
+listen = /run/php/php8.0-fpm.sock
+listen.owner = www-data
+listen.group = www-data
+php_admin_value[disable_functions] = exec,passthru,shell_exec,system
+php_admin_flag[allow_url_fopen] = off
+
+; Choose how the process manager will control the number of child processes.
+
+pm = dynamic
+pm.max_children = 40
+pm.start_servers = 10
+pm.min_spare_servers = 8
+pm.max_spare_servers = 15' > /etc/php/8.0/fpm/pool.d/www.conf
+
+service php8.0-fpm restart
+```
+
+Lakukan testing pada client untuk setiap script
+```
+ab -n 100 -c 10 -p login.json -T application/json http://atreides.it23.com/api/auth/login
+```
+
+#### Result 
+testing 1
+<img src="attachment/18.1.jpeg">
+<img src="attachment/18.2.jpeg">
+testing 2
+<img src="attachment/18.3.jpeg">
+<img src="attachment/18.4.jpeg">
+testing 3
+<img src="attachment/18.5.jpeg">
+<img src="attachment/18.6.jpeg">
+
+## Nomor 20
+> Nampaknya hanya menggunakan PHP-FPM tidak cukup untuk meningkatkan performa dari worker maka implementasikan Least-Conn pada Stilgar. Untuk testing kinerja dari worker tersebut dilakukan sebanyak 100 request dengan 10 request/second. (20)
+
+#### Script
+Tambahkan konfigurasi seperti berikut pada stilgar
+```
+echo 'upstream laravel_worker { #(round-robin(default), ip_hash, least_conn, hash $request_uri consistent)
+least_conn;
+    server 10.75.2.4:8001;
+    server 10.75.2.3:8002;
+    server 10.75.2.2:8003;
+}
+
+server {
+    listen 80;
+    server_name atreides.it23.com;
+
+    location / {
+        proxy_pass http://laravel_worker;
+    }
+}
+' > /etc/nginx/sites-available/laravel-fff
+
+ln -s /etc/nginx/sites-available/laravel-fff /etc/nginx/sites-enabled/
+
+service nginx restart
+```
+
+#### Result
+<img src="attachment/20.1.jpeg">
