@@ -363,4 +363,11 @@ service isc-dhcp-server restart
 ```
 #### Result
 <img src="attachment/1.1 (2).jpeg">
-<img src="attachment/1.2 (2).jpeg">
+<img src="attachment/1.2 (3).jpeg">
+
+## Nomor 15
+> atreides Channel memiliki beberapa endpoint yang harus ditesting sebanyak 100 request dengan 10 request/second. Tambahkan response dan hasil testing pada peta.
+> POST /auth/register (15)
+> POST /auth/login (16)
+> GET /me (17)
+
