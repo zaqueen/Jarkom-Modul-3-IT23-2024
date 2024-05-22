@@ -13,26 +13,26 @@
 3. [Topologi](#Topologi)
 4. [Konfigurasi](#Konfigurasi)
 5. [Install Dependencies](#Install-Dependencies)
-6. [Soal 1](#Soal-1)
-7. [Soal 2](#Soal-2)
-8. [Soal 3](#Soal-3)
-9. [Soal 4](#Soal-4)
-10. [Soal 5](#Soal-5)
-11. [Soal 6](#Soal-6)
-12. [Soal 7](#Soal-7)
-13. [Soal 8](#Soal-8)
-14. [Soal 9](#Soal-9)
-15. [Soal 10](#Soal-10)
-16. [Soal 11](#Soal-11)
-17. [Soal 12](#Soal-12)
-18. [Soal 13](#Soal-13)
-18. [Soal 14](#Soal-14)
-18. [Soal 15](#Soal-15)
-18. [Soal 16](#Soal-16)
-18. [Soal 17](#Soal-17)
-18. [Soal 18](#Soal-18)
-18. [Soal 19](#Soal-19)
-18. [Soal 20](#Soal-20)
+6. [Soal 1](##Soal-1)
+7. [Soal 2](##Soal-2)
+8. [Soal 3](##Soal-3)
+9. [Soal 4](##Soal-4)
+10. [Soal 5](##Soal-5)
+11. [Soal 6](##Soal-6)
+12. [Soal 7](##Soal-7)
+13. [Soal 8](##Soal-8)
+14. [Soal 9](##Soal-9)
+15. [Soal 10](##Soal-10)
+16. [Soal 11](##Soal-11)
+17. [Soal 12](##Soal-12)
+18. [Soal 13](##Soal-13)
+18. [Soal 14](##Soal-14)
+18. [Soal 15](##Soal-15)
+18. [Soal 16](##Soal-16)
+18. [Soal 17](##Soal-17)
+18. [Soal 18](##Soal-18)
+18. [Soal 19](##Soal-19)
+18. [Soal 20](##Soal-20)
 
 ## Topologi
  <img src="attachment/topologii.jpeg">
@@ -434,6 +434,63 @@ lynx 10.75.1.4
 lynx 10.75.1.5
 ```
 <img src="attachment/6_3.jpeg">
+
+## Nomor 7
+> Aturlah agar Stilgar dari fremen dapat dapat bekerja sama dengan maksimal, lalu lakukan testing dengan 5000 request dan 150 request/second.
+
+#### Script
+Lakukan konfigurasi load balancer berikut pada Stilgar.
+**Stilgar**
+```
+echo nameserver 10.75.3.2 > /etc/resolv.conf
+
+apt-get update
+apt-get install apache2-utils -y
+apt-get install nginx -y
+apt-get install lynx -y
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/round_robin
+
+echo '
+    upstream round-robin {
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 80;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://round-robin;
+    }
+} ' > /etc/nginx/sites-available/round_robin
+
+ln -sf /etc/nginx/sites-available/round_robin /etc/nginx/sites-enabled/
+
+if [ -f /etc/nginx/sites-enabled/default ]; then
+    rm /etc/nginx/sites-enabled/default
+fi
+
+service nginx restart
+```
+
+#### Result
+Eksekusi command berikut pada client untuk melakukan tes.
+```
+ab -n 5000 -c 150 http://10.75.4.3/
+```
+Response:
+<img src="attachment/7_1.jpeg">
+Hasil:
+<img src="attachment/7_2.jpeg">
+
 
 ## Nomor 15
 > atreides Channel memiliki beberapa endpoint yang harus ditesting sebanyak 100 request dengan 10 request/second. Tambahkan response dan hasil testing pada peta.
