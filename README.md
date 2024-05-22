@@ -366,6 +366,75 @@ service isc-dhcp-server restart
 <img src="attachment/1.1 (2).jpeg">
 <img src="attachment/1.2 (3).jpeg">
 
+## Nomor 6
+> Vladimir Harkonen memerintahkan setiap worker(harkonen) PHP, untuk melakukan konfigurasi virtual host untuk website berikut dengan menggunakan php 7.3.
+
+#### Script
+Lakukan konfigurasi berikut pada PHP Worker (Vladimir, Rabban, Feyd).
+**PHP Worker**
+```
+#!/bin/bash
+
+echo nameserver 10.75.3.2 > /etc/resolv.conf
+
+apt-get update
+apt-get install nginx -y
+apt-get install lynx -y
+apt-get install php php-fpm -y
+apt-get install wget -y
+apt-get install unzip -y
+service nginx start
+service php7.3-fpm start
+
+wget -O '/var/www/atreides.it23.com' 'https://drive.usercontent.google.com/u/0/uc?id=1lmnXJUbyx1JDt2OA5z_1dEowxozfkn30&export=download'
+unzip -o /var/www/atreides.it23.com -d /var/www/
+rm /var/www/atreides.it23.com
+mv /var/www/modul-3 /var/www/atreides.it23.com
+
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/atreides.it23.com
+ln -s /etc/nginx/sites-available/atreides.it23.com /etc/nginx/sites-enabled/
+rm /etc/nginx/sites-enabled/default
+
+echo 'server {
+     listen 80;
+     server_name _;
+
+     root /var/www/atreides.it23.com/;
+     index index.php index.html index.htm;
+
+     location / {
+         try_files $uri $uri/ /index.php?$query_string;
+     }
+
+     location ~ \.php$ {
+         include snippets/fastcgi-php.conf;
+         fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+         include fastcgi_params;
+     }
+ }' > /etc/nginx/sites-available/atreides.it23.com
+
+ service nginx restart
+```
+
+#### Result
+Eksekusi command berikut pada client:
+```
+lynx 10.75.1.3
+```
+<img src="attachment/6_1.jpeg">
+
+```
+lynx 10.75.1.4
+```
+<img src="attachment/6_2.jpeg">
+
+```
+lynx 10.75.1.5
+```
+<img src="attachment/6_3.jpeg">
+
 ## Nomor 15
 > atreides Channel memiliki beberapa endpoint yang harus ditesting sebanyak 100 request dengan 10 request/second. Tambahkan response dan hasil testing pada peta.
 > POST /auth/register (15)
