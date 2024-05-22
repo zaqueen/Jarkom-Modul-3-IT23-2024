@@ -1748,3 +1748,6 @@ service nginx restart
 
 #### Result
 <img src="attachment/20.1.jpeg">
+
+File it23_spice:  
+[it23_Spice.pdf](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/files/15398337/it23_Spice.pdf)
