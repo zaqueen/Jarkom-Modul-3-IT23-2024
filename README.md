@@ -487,9 +487,9 @@ Eksekusi command berikut pada client untuk melakukan tes.
 ab -n 5000 -c 150 http://10.75.4.3/
 ```
 Response:  
-<img src="attachment/7_1.jpeg">
+<img src="attachment/7_1.jpeg">  
 Hasil:  
-<img src="attachment/7_2.jpeg">
+<img src="attachment/7_2.jpeg">  
 
 ## Nomor 8
 > Karena diminta untuk menuliskan peta tercepat menuju spice, buatlah analisis hasil testing dengan 500 request dan 50 request/second masing-masing algoritma Load Balancer dengan ketentuan sebagai berikut:
@@ -636,18 +636,18 @@ Gunakan command berikut pada client untuk mengetes setiap algoritma load balance
 ab -n 500 -c 50 http://10.75.4.3:(port algoritma)/
 ```
 Hasil Round-Robin:  
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/4c50969e-ec1f-4c69-90a9-77f6237134f7)
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/4c50969e-ec1f-4c69-90a9-77f6237134f7)  
 Hasil Weighted Round-Robin:  
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/42965ce0-94ab-492f-bd0e-34768b6ff08d)
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/42965ce0-94ab-492f-bd0e-34768b6ff08d)  
 Hasil Generic_Hash:  
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/ba041f1a-6652-497f-a989-c99031925718)
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/ba041f1a-6652-497f-a989-c99031925718)  
 Hasil IP-Hash:  
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/551ebeda-3c61-4013-bea9-425277462925)
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/551ebeda-3c61-4013-bea9-425277462925)  
 Hasil Least-Connection:  
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/eb33a15b-6242-4bed-8231-dd57bb016764)
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/eb33a15b-6242-4bed-8231-dd57bb016764)  
 Grafik perbandingan:  
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/049cd03e-b977-430b-83d3-a0383283a2c8)
-Analisis:
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/049cd03e-b977-430b-83d3-a0383283a2c8)  
+Analisis:  
 Load balancer dengan jumlah request per detik tertinggi adalah IP Hash, diikuti oleh Generic Hash. Ini menunjukkan bahwa kedua metode hashing (IP Hash dan Generic Hash) memiliki kinerja yang baik dalam mendistribusikan beban secara efisien di antara server backend.  
 Load balancer dengan jumlah request per detik terendah adalah Least Connection, namun demikian, performa ini bisa saja dipengaruhi oleh keadaan spesifik dari server backend yang sedang di-load. Jika terdapat banyak koneksi yang bersifat idle, metode Least Connection mungkin tidak memberikan performa yang optimal.  
 
@@ -703,14 +703,814 @@ Gunakan command berikut untuk melakukan tes pada client.
 ```
 ab -n 1000 -c 10 http://10.75.4.3:85/
 ```
-Hasil 3 Worker:
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/d4779cc5-19e9-43c7-8f74-50e794e8556c)
-Hasil 2 Worker:
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/fd3905e3-75ac-4d19-bdae-2a8547e796e0)
-Hasil 1 Worker:
-![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/e62d7e26-255d-49a6-8a2e-a945e9f81ad2)
+Hasil 3 Worker:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/d4779cc5-19e9-43c7-8f74-50e794e8556c)  
+Hasil 2 Worker:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/fd3905e3-75ac-4d19-bdae-2a8547e796e0)  
+Hasil 1 Worker:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/e62d7e26-255d-49a6-8a2e-a945e9f81ad2)  
 
 ## Nomor 10
+> Selanjutnya coba tambahkan keamanan dengan konfigurasi autentikasi di LB dengan dengan kombinasi username: “secmart” dan password: “kcksyyy”, dengan yyy merupakan kode kelompok. Terakhir simpan file “htpasswd” nya di /etc/nginx/supersecret/
+
+#### Script
+Lakukan konfigurasi untuk stilgar.
+**Stilgar**
+```
+#!/bin/bash
+
+mkdir /etc/nginx/supersecret
+ 
+htpasswd -c /etc/nginx/supersecret/htpasswd secmart
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/round_robin
+
+echo '
+    upstream round-robin {
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 81;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://round-robin;
+
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+} ' > /etc/nginx/sites-available/round_robin
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/weight_round_robin
+
+echo '
+    upstream weight_round-robin {
+    server 10.75.1.3 weight=3;
+    server 10.75.1.4 weight=2;
+    server 10.75.1.5 weight=1;
+}
+
+server {
+    listen 82;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://weight_round-robin;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+} ' > /etc/nginx/sites-available/weight_round_robin
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/generic_hash
+
+echo '
+    upstream generic_hash {
+    hash $request_uri consistent;
+    server 10.75.1.3 weight=3;
+    server 10.75.1.4 weight=2;
+    server 10.75.1.5 weight=1;
+}
+
+server {
+    listen 83;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://generic_hash;
+
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+} ' > /etc/nginx/sites-available/generic_hash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/ip_hash
+
+echo '
+    upstream ip_hash {
+    ip_hash;
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 84;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://ip_hash;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+} ' > /etc/nginx/sites-available/ip_hash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/least_connection
+
+echo '
+    upstream least_connection {
+    least_conn;
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 85;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://least_connection;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+} ' > /etc/nginx/sites-available/least_connection
+
+ln -sf /etc/nginx/sites-available/round_robin /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/weight_round_robin /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/generic_hash /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/ip_hash /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/least_connection /etc/nginx/sites-enabled/
+
+service nginx restart
+```
+
+#### Result
+Gunakan command berikut untuk melakukan tes pada client.
+```
+lynx http://10.75.4.3:81
+```
+Hasil:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/1ef5d48c-85ea-4114-b7f0-d7484c4ec0e0)  
+
+## Nomor 11
+> Lalu buat untuk setiap request yang mengandung /dune akan di proxy passing menuju halaman https://www.dunemovie.com.au/.
+
+#### Script
+Lakukan konfigurasi berikut pada stilgar.
+**Stilgar**
+```
+#!/bin/bash
+ 
+htpasswd -c /etc/nginx/supersecret/htpasswd secmart
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/round_robin
+
+echo '
+    upstream round-robin {
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 81;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://round-robin;
+
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/round_robin
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/weight_round_robin
+
+echo '
+    upstream weight_round-robin {
+    server 10.75.1.3 weight=3;
+    server 10.75.1.4 weight=2;
+    server 10.75.1.5 weight=1;
+}
+
+server {
+    listen 82;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://weight_round-robin;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/weight_round_robin
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/generic_hash
+
+echo '
+    upstream generic_hash {
+    hash $request_uri consistent;
+    server 10.75.1.3 weight=3;
+    server 10.75.1.4 weight=2;
+    server 10.75.1.5 weight=1;
+}
+
+server {
+    listen 83;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://generic_hash;
+
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/generic_hash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/ip_hash
+
+echo '
+    upstream ip_hash {
+    ip_hash;
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 84;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://ip_hash;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/ip_hash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/least_connection
+
+echo '
+    upstream least_connection {
+    least_conn;
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 85;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://least_connection;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/least_connection
+
+ln -sf /etc/nginx/sites-available/round_robin /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/weight_round_robin /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/generic_hash /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/ip_hash /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/least_connection /etc/nginx/sites-enabled/
+
+service nginx restart
+```
+
+#### Result
+Gunakan command berikut untuk mengetes pada client.
+```
+lynx http://10.75.4.3:81/dune
+```
+Hasil:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/a8defa36-d164-4a6c-a35d-717cac35a31d)  
+
+## Nomor 12
+> Selanjutnya LB ini hanya boleh diakses oleh client dengan IP [Prefix IP].1.37, [Prefix IP].1.67, [Prefix IP].2.203, dan [Prefix IP].2.207.
+
+#### Script
+Konfigurasi beberapa node berikut.
+**Mohiam**
+```
+#!/bin/bash
+
+echo "
+option domain-name \"example.org\";
+option domain-name-servers ns1.example.org, ns2.example.org;
+
+default-lease-time 600;
+max-lease-time 7200;
+
+ddns-update-style-none;
+
+subnet 10.75.1.0 netmask 255.255.255.0 {
+    range 10.75.1.14 10.75.1.28;
+    range 10.75.1.49 10.75.1.70;
+    option routers 10.75.1.1;
+    option broadcast-address 10.75.1.255;
+    option domain-name-servers 10.75.3.3;
+    default-lease-time 300;
+    max-lease-time 5220;
+}
+
+subnet 10.75.2.0 netmask 255.255.255.0 {
+    range 10.75.2.15 10.75.2.25;
+    range 10.75.2.200 10.75.2.210;
+    option routers 10.75.2.1;
+    option broadcast-address 10.75.2.255;
+    option domain-name-servers 10.75.3.3;
+    default-lease-time 1200;
+    max-lease-time 5220;
+}
+
+subnet 10.75.3.0 netmask 255.255.255.0 {
+}
+
+subnet 10.75.4.0 netmask 255.255.255.0 {
+}
+
+host Paul {
+    hardware ethernet 22:5d:5c:a6:9e:8b;
+    fixed-address 10.75.2.203;
+}" > /etc/dhcp/dhcpd.conf
+
+service isc-dhcp-server restart
+
+service isc-dhcp-server status
+```
+**Stilgar**
+```
+#!/bin/bash
+ 
+htpasswd -c /etc/nginx/supersecret/htpasswd secmart
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/round_robin
+
+echo '
+    upstream round-robin {
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 81;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+        allow 10.75.1.37;
+        allow 10.75.1.67;
+        allow 10.75.2.203;
+        allow 10.75.2.207;
+        deny all;
+
+        proxy_pass http://round-robin;
+
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/round_robin
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/weight_round_robin
+
+echo '
+    upstream weight_round-robin {
+    server 10.75.1.3 weight=3;
+    server 10.75.1.4 weight=2;
+    server 10.75.1.5 weight=1;
+}
+
+server {
+    listen 82;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+        allow 10.75.1.37;
+        allow 10.75.1.67;
+        allow 10.75.2.203;
+        allow 10.75.2.207;
+        deny all;
+
+        proxy_pass http://weight_round-robin;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/weight_round_robin
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/generic_hash
+
+echo '
+    upstream generic_hash {
+    hash $request_uri consistent;
+    server 10.75.1.3 weight=3;
+    server 10.75.1.4 weight=2;
+    server 10.75.1.5 weight=1;
+}
+
+server {
+    listen 83;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+        allow 10.75.1.37;
+        allow 10.75.1.67;
+        allow 10.75.2.203;
+        allow 10.75.2.207;
+        deny all;
+
+        proxy_pass http://generic_hash;
+
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/generic_hash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/ip_hash
+
+echo '
+    upstream ip_hash {
+    ip_hash;
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 84;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+        allow 10.75.1.37;
+        allow 10.75.1.67;
+        allow 10.75.2.203;
+        allow 10.75.2.207;
+        deny all;
+
+        proxy_pass http://ip_hash;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/ip_hash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/least_connection
+
+echo '
+    upstream least_connection {
+    least_conn;
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 85;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+        allow 10.75.1.37;
+        allow 10.75.1.67;
+        allow 10.75.2.203;
+        allow 10.75.2.207;
+        deny all;
+
+        proxy_pass http://least_connection;
+        
+        auth_basic "Restricted Content";
+        auth_basic_user_file /etc/nginx/supersecret/htpasswd;
+    }
+        location /dune {
+        rewrite ^/dune(.*)$ https://www.dunemovie.com.au/$1 permanent;
+    }
+} ' > /etc/nginx/sites-available/least_connection
+
+ln -sf /etc/nginx/sites-available/round_robin /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/weight_round_robin /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/generic_hash /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/ip_hash /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/least_connection /etc/nginx/sites-enabled/
+
+service nginx restart
+```
+**Paul**
+```
+#!/bin/bash
+
+echo "auto eth0
+iface eth0 inet dhcp
+hwaddress ether 22:5d:5c:a6:9e:8b
+" > /etc/network/interfaces
+```
+
+#### Result
+Pastikan ip dari Paul berubah sesuai yang di allow.  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/069a3260-5180-4c28-a422-4e7ab6e41a1b)  
+Hasil jika dibuka melalui Paul:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/b34d8107-7136-4e20-bddd-a8dfe53b62bd)  
+Hasil jika dibuka melalui Dmitri:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/272253cb-0578-42bf-976c-2df22c7369eb)  
+
+## Nomor 13
+> Semua data yang diperlukan, diatur pada Chani dan harus dapat diakses oleh Leto, Duncan, dan Jessica.
+
+#### Script
+Konfigurasikan laravel worker dan Chani.
+**Chani**
+```
+#!/bin/bash
+
+echo nameserver 10.75.3.2 > /etc/resolv.conf
+
+apt-get update
+apt-get install mariadb-server -y
+service mysql start
+
+mysql -e "CREATE USER 'kelompokit23'@'%' IDENTIFIED BY 'passwordit23';"
+mysql -e "CREATE USER 'kelompokit23'@'atreides.it23.com' IDENTIFIED BY 'passwordit23';"
+mysql -e "CREATE DATABASE dbkelompokit23;"
+mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'kelompokit23'@'%';"
+mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'kelompokit23'@'atreides.it23.com';"
+mysql -e "FLUSH PRIVILEGES;"
+
+mysql="[mysqld]
+skip-networking=0
+skip-bind-address
+"
+echo "$mysql" > /etc/mysql/my.cnf
+
+service mysql restart
+```
+**Laravel Worker**
+```
+echo nameserver 10.75.3.2 > /etc/resolv.conf
+
+apt-get update
+apt-get install mariadb-client -y
+```
+
+#### Result
+Gunakan command berikut pada salah satu laravel worker.
+```
+mariadb --host=10.69.2.2 --port=3306 --user=kelompokit11 --password
+```
+Hasil:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/260215b1-ae96-4ec6-a763-f68c73d61461)  
+
+## Nomor 14
+> Leto, Duncan, dan Jessica memiliki atreides Channel sesuai dengan quest guide berikut. Jangan lupa melakukan instalasi PHP8.0 dan Composer.
+
+#### Script
+Konfigurasi setiap laravel_worker.
+**Laravel_worker**
+```
+#!/bin/bash
+
+# Install kebutuhan
+apt-get update
+apt-get install lynx -y
+apt-get install -y lsb-release ca-certificates apt-transport-https software-properties-common gnupg2
+curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
+sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+apt-get update
+
+# Install PHP
+apt-get install php8.0-mbstring php8.0-xml php8.0-cli php8.0-common php8.0-intl php8.0-opcache php8.0-readline php8.0-mysql php8.0-fpm php8.0-curl unzip wget -y
+apt-get install nginx -y
+service nginx start
+service php8.0-fpm start
+
+# Install composer
+wget https://getcomposer.org/download/2.0.13/composer.phar
+chmod +x composer.phar
+mv composer.phar /usr/local/bin/composer
+
+# Install & clone git 
+apt-get install git -y
+cd /var/www 
+git clone https://github.com/martuafernando/laravel-praktikum-jarkom
+cd /var/www/laravel-praktikum-jarkom 
+composer update
+```
+**Leto, Duncan, dan Jessica**
+```
+#!/bin/bash
+
+# Konfigurasi Laravel
+cd /var/www/laravel-praktikum-jarkom 
+cp .env.example .env
+echo '
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=10.75.4.2
+DB_PORT=3306
+DB_DATABASE=dbkelompokit23
+DB_USERNAME=kelompokit23
+DB_PASSWORD=passwordit23
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+PUSHER_APP_CLUSTER=mt1
+
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_HOST="${PUSHER_HOST}"
+VITE_PUSHER_PORT="${PUSHER_PORT}"
+VITE_PUSHER_SCHEME="${PUSHER_SCHEME}"
+VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+' > /var/www/laravel-praktikum-jarkom/.env
+cd /var/www/laravel-praktikum-jarkom
+php artisan key:generate
+php artisan config:cache
+php artisan migrate
+php artisan db:seed
+php artisan storage:link
+php artisan jwt:secret
+php artisan config:clear
+chown -R www-data.www-data /var/www/laravel-praktikum-jarkom/storage
+
+
+echo '
+ server {
+ 	listen 2301;
+
+ 	root /var/www/laravel-praktikum-jarkom/public;
+
+ 	index index.php index.html index.htm;
+ 	server_name _;
+
+ 	location / {
+ 			try_files $uri $uri/ /index.php?$query_string;
+ 	}
+
+ 	# pass PHP scripts to FastCGI server
+ 	location ~ \.php$ {
+ 	include snippets/fastcgi-php.conf;
+ 	fastcgi_pass unix:/var/run/php/php8.0-fpm.sock;
+ 	}
+
+    location ~ /\.ht {
+ 			deny all;
+ 	}
+
+    error_log /var/log/nginx/implementasi_error.log;
+    access_log /var/log/nginx/implementasi_access.log;
+ }
+' > /etc/nginx/sites-available/implementasi
+ln -s /etc/nginx/sites-available/implementasi /etc/nginx/sites-enabled/
+unlink /etc/nginx/sites-enabled/default
+
+chown -R www-data.www-data /var/www/laravel-praktikum-jarkom-main/storage
+
+service php8.0-fpm start
+service nginx restart
+```
+Bedakan port untuk listening pada setiap worker.
+
+#### Result
+Hasil pada Leto:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/3480c239-5571-4d79-a5bc-87ab0144f405)  
+Hasil pada Duncan:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/a36eef10-2f78-4590-9ca2-768791d67463)  
+Hasil pada Jessica:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/810e108d-a67e-4807-834d-3b62b2a6d51d)  
+
 
 ## Nomor 15
 > atreides Channel memiliki beberapa endpoint yang harus ditesting sebanyak 100 request dengan 10 request/second. Tambahkan response dan hasil testing pada peta.
