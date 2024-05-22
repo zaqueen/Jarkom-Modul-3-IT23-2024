@@ -486,11 +486,231 @@ Eksekusi command berikut pada client untuk melakukan tes.
 ```
 ab -n 5000 -c 150 http://10.75.4.3/
 ```
-Response:
+Response:  
 <img src="attachment/7_1.jpeg">
-Hasil:
+Hasil:  
 <img src="attachment/7_2.jpeg">
 
+## Nomor 8
+> Karena diminta untuk menuliskan peta tercepat menuju spice, buatlah analisis hasil testing dengan 500 request dan 50 request/second masing-masing algoritma Load Balancer dengan ketentuan sebagai berikut:
+> Nama Algoritma Load Balancer
+> Report hasil testing pada Apache Benchmark
+> Grafik request per second untuk masing masing algoritma.
+> Analisis
+
+#### Script
+Konfigurasi Stilgar untuk melakukan pengetesan algoritma load balancer.
+```
+#!/bin/bash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/round_robin
+
+echo '
+    upstream round-robin {
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 81;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://round-robin;
+    }
+} ' > /etc/nginx/sites-available/round_robin
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/weight_round_robin
+
+echo '
+    upstream weight_round-robin {
+    server 10.75.1.3 weight=3;
+    server 10.75.1.4 weight=2;
+    server 10.75.1.5 weight=1;
+}
+
+server {
+    listen 82;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://weight_round-robin;
+    }
+} ' > /etc/nginx/sites-available/weight_round_robin
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/generic_hash
+
+echo '
+    upstream generic_hash {
+    hash $request_uri consistent;
+    server 10.75.1.3 weight=3;
+    server 10.75.1.4 weight=2;
+    server 10.75.1.5 weight=1;
+}
+
+server {
+    listen 83;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://generic_hash;
+    }
+} ' > /etc/nginx/sites-available/generic_hash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/ip_hash
+
+echo '
+    upstream ip_hash {
+    ip_hash;
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 84;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://ip_hash;
+    }
+} ' > /etc/nginx/sites-available/ip_hash
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/least_connection
+
+echo '
+    upstream least_connection {
+    least_conn;
+    server 10.75.1.3;
+    server 10.75.1.4;
+    server 10.75.1.5;
+}
+
+server {
+    listen 85;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://least_connection;
+    }
+} ' > /etc/nginx/sites-available/least_connection
+
+ln -sf /etc/nginx/sites-available/round_robin /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/weight_round_robin /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/generic_hash /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/ip_hash /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/least_connection /etc/nginx/sites-enabled/
+
+service nginx restart
+```
+
+#### Result
+Gunakan command berikut pada client untuk mengetes setiap algoritma load balancer:
+```
+ab -n 500 -c 50 http://10.75.4.3:(port algoritma)/
+```
+Hasil Round-Robin:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/4c50969e-ec1f-4c69-90a9-77f6237134f7)
+Hasil Weighted Round-Robin:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/42965ce0-94ab-492f-bd0e-34768b6ff08d)
+Hasil Generic_Hash:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/ba041f1a-6652-497f-a989-c99031925718)
+Hasil IP-Hash:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/551ebeda-3c61-4013-bea9-425277462925)
+Hasil Least-Connection:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/eb33a15b-6242-4bed-8231-dd57bb016764)
+Grafik perbandingan:  
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/049cd03e-b977-430b-83d3-a0383283a2c8)
+Analisis:
+Load balancer dengan jumlah request per detik tertinggi adalah IP Hash, diikuti oleh Generic Hash. Ini menunjukkan bahwa kedua metode hashing (IP Hash dan Generic Hash) memiliki kinerja yang baik dalam mendistribusikan beban secara efisien di antara server backend.  
+Load balancer dengan jumlah request per detik terendah adalah Least Connection, namun demikian, performa ini bisa saja dipengaruhi oleh keadaan spesifik dari server backend yang sedang di-load. Jika terdapat banyak koneksi yang bersifat idle, metode Least Connection mungkin tidak memberikan performa yang optimal.  
+
+## Nomor 9
+> Dengan menggunakan algoritma Least-Connection, lakukan testing dengan menggunakan 3 worker, 2 worker, dan 1 worker sebanyak 1000 request dengan 10 request/second, kemudian tambahkan grafiknya pada peta.
+
+#### Script
+Tambahkan commenting untuk mengurangi worker.
+**Stilgar**
+```
+echo nameserver 10.75.3.2 > /etc/resolv.conf
+
+apt-get update
+apt-get install apache2-utils -y
+apt-get install nginx -y
+apt-get install lynx -y
+
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/round_robin
+
+echo '
+    upstream round-robin {
+    least-conn;
+    server 10.75.1.3;
+#    server 10.75.1.4;
+#    server 10.75.1.5;
+}
+
+server {
+    listen 85;
+    root /var/www/html;
+
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name _;
+
+        location / {
+
+        proxy_pass http://round-robin;
+    }
+} ' > /etc/nginx/sites-available/round_robin
+
+ln -sf /etc/nginx/sites-available/round_robin /etc/nginx/sites-enabled/
+
+if [ -f /etc/nginx/sites-enabled/default ]; then
+    rm /etc/nginx/sites-enabled/default
+fi
+
+service nginx restart
+```
+
+#### Result
+Gunakan command berikut untuk melakukan tes pada client.
+```
+ab -n 1000 -c 10 http://10.75.4.3:85/
+```
+Hasil 3 Worker:
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/d4779cc5-19e9-43c7-8f74-50e794e8556c)
+Hasil 2 Worker:
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/fd3905e3-75ac-4d19-bdae-2a8547e796e0)
+Hasil 1 Worker:
+![image](https://github.com/zaqueen/Jarkom-Modul-3-IT23-2024/assets/62441217/e62d7e26-255d-49a6-8a2e-a945e9f81ad2)
+
+## Nomor 10
 
 ## Nomor 15
 > atreides Channel memiliki beberapa endpoint yang harus ditesting sebanyak 100 request dengan 10 request/second. Tambahkan response dan hasil testing pada peta.
